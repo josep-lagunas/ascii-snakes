@@ -2,8 +2,9 @@ from random import choice
 from typing import List
 
 from map_builder.Piece import Piece
-
+free_space_piece = Piece(" ")
 pieces0 = [
+    free_space_piece,
     Piece("═", accept_left_conn=True, accept_right_conn=True),
     Piece("║", accept_top_conn=True, accept_bottom_conn=True),
     Piece("╔", accept_bottom_conn=True, accept_right_conn=True),
@@ -18,6 +19,7 @@ pieces0 = [
 ]
 
 pieces1 = [
+    free_space_piece,
     Piece("═", accept_left_conn=True, accept_right_conn=True),
     Piece("│", accept_top_conn=True, accept_bottom_conn=True),
     Piece("╒", accept_bottom_conn=True, accept_right_conn=True),
@@ -32,6 +34,7 @@ pieces1 = [
 ]
 
 pieces2 = [
+    free_space_piece,
     Piece("─", accept_left_conn=True, accept_right_conn=True),
     Piece("│", accept_top_conn=True, accept_bottom_conn=True),
     Piece("┌", accept_bottom_conn=True, accept_right_conn=True),
@@ -82,15 +85,10 @@ class MapApi:
             for c in range(cols):
                 colz.append(MapApi._select_piece(rowz, r, c, wall_type))
 
-        map = "\n".join([
+        return "\n".join([
             "".join([p.text for p in r])
             for r in rowz
         ])
-
-        print()
-        print(map)
-
-        return map
 
     @staticmethod
     def _select_piece(matrix: List[List[Piece]], row: int, col: int, wall_type: int = 0) -> Piece:

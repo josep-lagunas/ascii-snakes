@@ -5,7 +5,7 @@ const connectWS = () => {
     connection = new WebSocket('ws://localhost:8888/ws');
 
     connection.addEventListener('open', (e) => {
-        connection.send('{ "rows": 30, "cols": 70, "apply_restrictions": true, "wall_type": 2}')
+        connection.send('{ "rows": 30, "cols": 70, "apply_restrictions": true, "wall_type": 0}')
     });
 
     connection.addEventListener('message', (e) => {
