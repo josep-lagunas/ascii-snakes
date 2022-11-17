@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  twimap:
+    build: .
+    command: python -m twimap.server
+    volumes:
+      - .:/app
+    ports:
+      - "8888:8888"
+
+networks:
+  default:
+    external:
+      name: default_network
