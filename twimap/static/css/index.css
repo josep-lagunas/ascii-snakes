@@ -1,0 +1,26 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#map {
+    line-height:1em;
+    white-space: pre !important;
+    color: #02fa59;
+    font-size: 10pt;
+    font-family: courier, monospace, monospace !important;
+    margin: auto;
+    width: fit-content;
+}
+
+#info {
+    display: list-item;
+    text-align: center;
+    font-family: courier, monospace, monospace !important;
+}
+
+.black {
+    background: #000;
+    color: #fff;
+}

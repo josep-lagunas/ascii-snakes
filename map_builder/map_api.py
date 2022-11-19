@@ -1,12 +1,16 @@
+import copy
 from random import choice
-from typing import List
 
 from map_builder.Piece import Piece
-free_space_piece = Piece(" ")
+from map_builder.movement import Coordinate
+
+free_space_piece = Piece(" ", True, True, True, True)
+double_vertical_connection_piece = Piece("║", accept_top_conn=True, accept_bottom_conn=True)
+
 pieces0 = [
-    free_space_piece,
+    # free_space_piece,
     Piece("═", accept_left_conn=True, accept_right_conn=True),
-    Piece("║", accept_top_conn=True, accept_bottom_conn=True),
+    double_vertical_connection_piece,
     Piece("╔", accept_bottom_conn=True, accept_right_conn=True),
     Piece("╗", accept_bottom_conn=True, accept_left_conn=True),
     Piece("╚", accept_top_conn=True, accept_right_conn=True),
@@ -18,10 +22,12 @@ pieces0 = [
     Piece("╬", accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
 ]
 
+mix_vertical_connection_piece = Piece("│", accept_top_conn=True, accept_bottom_conn=True)
+
 pieces1 = [
-    free_space_piece,
+    # free_space_piece,
     Piece("═", accept_left_conn=True, accept_right_conn=True),
-    Piece("│", accept_top_conn=True, accept_bottom_conn=True),
+    mix_vertical_connection_piece,
     Piece("╒", accept_bottom_conn=True, accept_right_conn=True),
     Piece("╕", accept_bottom_conn=True, accept_left_conn=True),
     Piece("╘", accept_top_conn=True, accept_right_conn=True),
@@ -33,10 +39,11 @@ pieces1 = [
     Piece("╪", accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
 ]
 
+single_vertical_connection_piece = Piece("│", accept_top_conn=True, accept_bottom_conn=True)
 pieces2 = [
-    free_space_piece,
+    # free_space_piece,
     Piece("─", accept_left_conn=True, accept_right_conn=True),
-    Piece("│", accept_top_conn=True, accept_bottom_conn=True),
+    single_vertical_connection_piece,
     Piece("┌", accept_bottom_conn=True, accept_right_conn=True),
     Piece("┐", accept_bottom_conn=True, accept_left_conn=True),
     Piece("└", accept_top_conn=True, accept_right_conn=True),
@@ -49,49 +56,96 @@ pieces2 = [
 ]
 
 pieces = {
-    0: pieces0, 1: pieces1, 2: pieces2
+    0: {"pieces": pieces0, "vertical_connection_piece": double_vertical_connection_piece},
+    1: {"pieces": pieces1, "vertical_connection_piece": mix_vertical_connection_piece},
+    2: {"pieces": pieces2, "vertical_connection_piece": single_vertical_connection_piece},
+    3: {"pieces": pieces0 + pieces1 + pieces2,
+        "vertical_connection_piece": choice([double_vertical_connection_piece,
+                                             mix_vertical_connection_piece,
+                                             single_vertical_connection_piece])}
 }
 
 
-# ["═","║","╒","╓","╔","╕","╖","╗","╘","╙","╚","╛","╜","╝","╞","╟","╠","╡","╢","╣","╤","╥","╦","╧","╨","╩","╪"]
 # check all chars here: https://en.wikipedia.org/wiki/List_of_Unicode_characters
 
 
 class MapApi:
 
-    def __init__(self):
-        pass
+    def __init__(self, progress_creation_callback):
+        self._map = []
+        self._progress_creation_callback = progress_creation_callback
 
-    @staticmethod
-    def build_map(*, rows: int, cols: int, restricted: bool = True, wall_type: int = 0) -> str:
+    def build_map(self, *, rows: int, cols: int, restricted: bool = True, wall_type: int = 0) -> str:
         if restricted:
-            return MapApi.build_map_with_restrictions(rows=rows, cols=cols, wall_type=wall_type)
-        return MapApi.build_map_without_restrictions(rows=rows, cols=cols, wall_type=wall_type)
+            return self.build_map_with_restrictions(rows=rows, cols=cols, wall_type=wall_type)
+        return self.build_map_without_restrictions(rows=rows, cols=cols, wall_type=wall_type)
 
     @staticmethod
-    def build_map_without_restrictions(*, rows: int, cols: int, wall_type: int = 0) -> List[List[str]]:
+    def build_map_without_restrictions(*, rows: int, cols: int, wall_type: int = 0) -> str:
         random_pieces = "\n".join([
-            "".join([choice(pieces[wall_type]).text for i in range(cols)])
-            for r in range(rows)
+            "".join([choice(pieces[wall_type]["pieces"]).text for _ in range(cols)])
+            for _ in range(rows)
         ])
         return random_pieces
 
-    @staticmethod
-    def build_map_with_restrictions(*, rows: int, cols: int, wall_type: int = 0) -> str:
-        rowz = []
-        for r in range(rows):
-            colz = []
-            rowz.append(colz)
-            for c in range(cols):
-                colz.append(MapApi._select_piece(rowz, r, c, wall_type))
+    def build_map_with_restrictions(self, *, rows: int, cols: int, wall_type: int = 0) -> str:
+        r = 0
+        while r < rows:
+            columns = []
+            self._map.append(columns)
+            new_file_required = False
+            c = 0
+            while c < cols:
+                coordinate = Coordinate(r, c)
+                piece = self._select_piece(coordinate, wall_type)
+                if c > 0:
+                    left_piece = self._map[coordinate.row][coordinate.col - 1]
+                    if not piece.accept_left_conn and not left_piece.accept_right_conn:
+                        columns.append(free_space_piece)
+                        c += 1
+                if c < cols:
+                    columns.append(piece)
+                    top_piece = self._map[coordinate.row - 1][c]
+                    free_horizontal_space_required = not top_piece.accept_bottom_conn and not piece.accept_top_conn
+                    new_file_required = new_file_required or free_horizontal_space_required
+                    c += 1
 
-        return "\n".join([
-            "".join([p.text for p in r])
-            for r in rowz
+            if r > 0 and new_file_required and 1:
+                self._map.append(copy.copy(columns))
+                r += 1
+                c = 0
+                while c < cols:
+                    top_piece = self._map[r - 2][c]
+                    piece = self._map[r][c]
+                    if top_piece != free_space_piece and top_piece.accept_bottom_conn and piece.accept_top_conn:
+                        vertical_conn_piece = pieces[wall_type]["vertical_connection_piece"]
+                        self._map[r - 1][c] = vertical_conn_piece if choice([True, False]) else free_space_piece
+                    else:
+                        self._map[r - 1][c] = free_space_piece
+                    c += 1
+
+            r += 1
+            self._progress_creation_callback(self.print_map_line(self._map[r - 1]),
+                                             "{:.2f}".format(min(100.00, (r / rows) * 100)))
+        return self.print_map()
+
+    def print_map(self):
+        m = "\n".join([
+            self.print_map_line(r)
+            for r in self._map
         ])
 
+        print(m)
+        return m
+
     @staticmethod
-    def _select_piece(matrix: List[List[Piece]], row: int, col: int, wall_type: int = 0) -> Piece:
+    def print_map_line(row):
+        return "".join([p.text for p in row])
+
+    def print_coordinate(self, coordinate: Coordinate):
+        print(self._map[coordinate.row][coordinate.col].text)
+
+    def _select_piece(self, coordinate: Coordinate, wall_type: int = 0) -> Piece:
         """
         Apply ¬XOR ( not(A ^ B) )to ensure only if restrictions apply in both sides of connection
         the piece is accepted
@@ -99,16 +153,33 @@ class MapApi:
         piece = None
         match = False
         while not match:
-            piece = choice(pieces[wall_type])
+            piece = choice(pieces[wall_type]["pieces"])
             match_top = True
             match_left = True
-            if row > 0:
-                top_piece = matrix[row - 1][col]
+            if coordinate.row > 0:
+                top_piece = self._map[coordinate.row - 1][coordinate.col]
                 match_top = not (piece.accept_top_conn ^ top_piece.accept_bottom_conn)
-            if col > 0:
-                left_piece = matrix[row][col - 1]
+            if coordinate.col > 0:
+                left_piece = self._map[coordinate.row][coordinate.col - 1]
                 match_left = not (piece.accept_left_conn ^ left_piece.accept_right_conn)
 
             match = match_top and match_left
 
         return piece
+
+    def _is_allowed_movement(self, origin: Coordinate, destination: Coordinate) -> bool:
+        vertical_movement = abs(destination.row - origin.row)
+        horizontal_movement = abs(destination.col - origin.col)
+        if not self._coordinate_in_bounds(origin) or not self._coordinate_in_bounds(destination):
+            return False
+        # only 1 step per movement allowed
+        if vertical_movement > 1 or horizontal_movement > 1:
+            return False
+        # diagonal movement disabled
+        if horizontal_movement and vertical_movement:
+            return False
+
+        # if horizontal_movement:
+
+    def _coordinate_in_bounds(self, coordinate: Coordinate) -> bool:
+        return len(self._map) > coordinate.row >= 0 and len(self._map[0]) > coordinate.col >= 0
