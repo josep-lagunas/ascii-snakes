@@ -1,10 +1,11 @@
-import copy
+from copy import deepcopy
 from random import choice
+from typing import List
 
-from map_builder.Piece import Piece
+from map_builder.pieces import Piece
 from map_builder.movement import Coordinate
 
-free_space_piece = Piece(" ", True, True, True, True)
+free_space_piece = Piece(" ", True, True, True, True, True)
 double_vertical_connection_piece = Piece("║", accept_top_conn=True, accept_bottom_conn=True)
 
 pieces0 = [
@@ -50,8 +51,8 @@ pieces2 = [
     Piece("┘", accept_top_conn=True, accept_left_conn=True),
     Piece("├", accept_top_conn=True, accept_bottom_conn=True, accept_right_conn=True),
     Piece("┤", accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True),
-    Piece("┬", accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
-    Piece("┴", accept_top_conn=True, accept_left_conn=True, accept_right_conn=True),
+    # Piece("┬", accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
+    # Piece("┴", accept_top_conn=True, accept_left_conn=True, accept_right_conn=True),
     Piece("┼", accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
 ]
 
@@ -74,6 +75,10 @@ class MapApi:
     def __init__(self, progress_creation_callback):
         self._map = []
         self._progress_creation_callback = progress_creation_callback
+
+    @property
+    def map(self) -> List[List[Piece]]:
+        return self._map
 
     def build_map(self, *, rows: int, cols: int, restricted: bool = True, wall_type: int = 0) -> str:
         if restricted:
@@ -101,7 +106,7 @@ class MapApi:
                 if c > 0:
                     left_piece = self._map[coordinate.row][coordinate.col - 1]
                     if not piece.accept_left_conn and not left_piece.accept_right_conn:
-                        columns.append(free_space_piece)
+                        columns.append(deepcopy(free_space_piece))
                         c += 1
                 if c < cols:
                     columns.append(piece)
@@ -111,7 +116,7 @@ class MapApi:
                     c += 1
 
             if r > 0 and new_file_required and 1:
-                self._map.append(copy.copy(columns))
+                self._map.append(deepcopy(columns))
                 r += 1
                 c = 0
                 while c < cols:
@@ -119,9 +124,9 @@ class MapApi:
                     piece = self._map[r][c]
                     if top_piece != free_space_piece and top_piece.accept_bottom_conn and piece.accept_top_conn:
                         vertical_conn_piece = pieces[wall_type]["vertical_connection_piece"]
-                        self._map[r - 1][c] = vertical_conn_piece if choice([True, False]) else free_space_piece
+                        self._map[r - 1][c] = deepcopy(vertical_conn_piece) if choice([True, False]) else deepcopy(free_space_piece)
                     else:
-                        self._map[r - 1][c] = free_space_piece
+                        self._map[r - 1][c] = deepcopy(free_space_piece)
                     c += 1
 
             r += 1
@@ -135,7 +140,7 @@ class MapApi:
             for r in self._map
         ])
 
-        print(m)
+        # print(m)
         return m
 
     @staticmethod
@@ -153,7 +158,7 @@ class MapApi:
         piece = None
         match = False
         while not match:
-            piece = choice(pieces[wall_type]["pieces"])
+            piece = deepcopy(choice(pieces[wall_type]["pieces"]))
             match_top = True
             match_left = True
             if coordinate.row > 0:
@@ -166,20 +171,6 @@ class MapApi:
             match = match_top and match_left
 
         return piece
-
-    def _is_allowed_movement(self, origin: Coordinate, destination: Coordinate) -> bool:
-        vertical_movement = abs(destination.row - origin.row)
-        horizontal_movement = abs(destination.col - origin.col)
-        if not self._coordinate_in_bounds(origin) or not self._coordinate_in_bounds(destination):
-            return False
-        # only 1 step per movement allowed
-        if vertical_movement > 1 or horizontal_movement > 1:
-            return False
-        # diagonal movement disabled
-        if horizontal_movement and vertical_movement:
-            return False
-
-        # if horizontal_movement:
 
     def _coordinate_in_bounds(self, coordinate: Coordinate) -> bool:
         return len(self._map) > coordinate.row >= 0 and len(self._map[0]) > coordinate.col >= 0

@@ -5,11 +5,14 @@ const connectWS = () => {
     connection = new WebSocket('ws://localhost:8888/ws');
 
     connection.addEventListener('open', (e) => {
-        connection.send('{ "rows": 55, "cols": 200, "apply_restrictions": true, "wall_type": 2}')
+        config = { "rows": 55,
+        "cols": 80, "apply_restrictions": true, "wall_type": 2,
+        "delay": 0.0001, "travellers_count": 50}
+        connection.send(JSON.stringify(config))
     });
 
     connection.addEventListener('message', (e) => {
-        console.log('Map received:\n' + e.data)
+        //console.log('Map received:\n' + e.data)
         json = JSON.parse(e.data)
         data = ""
         map = document.getElementById('map')
@@ -25,6 +28,11 @@ const connectWS = () => {
             data = `${json["map"]}`
             map.innerText = data
         }
+
+        if ("type" in json && json["type"] == "traveller_feedback")
+            console.log(json)
+
+
     });
 }
 
