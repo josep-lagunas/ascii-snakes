@@ -51,19 +51,38 @@ pieces2 = [
     Piece("┘", accept_top_conn=True, accept_left_conn=True),
     Piece("├", accept_top_conn=True, accept_bottom_conn=True, accept_right_conn=True),
     Piece("┤", accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True),
-    # Piece("┬", accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
-    # Piece("┴", accept_top_conn=True, accept_left_conn=True, accept_right_conn=True),
+    Piece("┬", accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
+    Piece("┴", accept_top_conn=True, accept_left_conn=True, accept_right_conn=True),
     Piece("┼", accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
+]
+
+block_piece_text = "■"
+block_vertical_connection_piece = Piece(block_piece_text, accept_top_conn=True, accept_bottom_conn=True)
+pieces3 = [
+    # free_space_piece,
+    Piece(block_piece_text, accept_left_conn=True, accept_right_conn=True),
+    block_vertical_connection_piece,
+    Piece(block_piece_text, accept_bottom_conn=True, accept_right_conn=True),
+    Piece(block_piece_text, accept_bottom_conn=True, accept_left_conn=True),
+    Piece(block_piece_text, accept_top_conn=True, accept_right_conn=True),
+    Piece(block_piece_text, accept_top_conn=True, accept_left_conn=True),
+    Piece(block_piece_text, accept_top_conn=True, accept_bottom_conn=True, accept_right_conn=True),
+    Piece(block_piece_text, accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True),
+    Piece(block_piece_text, accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
+    Piece(block_piece_text, accept_top_conn=True, accept_left_conn=True, accept_right_conn=True),
+    Piece(block_piece_text, accept_top_conn=True, accept_bottom_conn=True, accept_left_conn=True, accept_right_conn=True),
 ]
 
 pieces = {
     0: {"pieces": pieces0, "vertical_connection_piece": double_vertical_connection_piece},
     1: {"pieces": pieces1, "vertical_connection_piece": mix_vertical_connection_piece},
     2: {"pieces": pieces2, "vertical_connection_piece": single_vertical_connection_piece},
-    3: {"pieces": pieces0 + pieces1 + pieces2,
+    3: {"pieces": pieces3, "vertical_connection_piece": block_vertical_connection_piece},
+    4: {"pieces": pieces0 + pieces1 + pieces2 + pieces3,
         "vertical_connection_piece": choice([double_vertical_connection_piece,
                                              mix_vertical_connection_piece,
-                                             single_vertical_connection_piece])}
+                                             single_vertical_connection_piece,
+                                             block_vertical_connection_piece])}
 }
 
 

@@ -15,7 +15,7 @@ from map_traveller.errors import TravellerFindingExitError
 
 class MapTraveller:
     def __init__(self, id: str, map: List[List[Piece]], origin: Coordinate, callback_progress: Callable,
-                 delay: Decimal = 0.02):
+                 delay: Decimal = 0.00000001):
         self._map = map
         self._movements = []
         self._origin = origin
@@ -25,9 +25,9 @@ class MapTraveller:
         self._call_back_progress = callback_progress
         self._enable_snake_effect = True
         self._snake = []
-        self._snake_horizontal_body = "▆"
-        self._snake_vertical_body = "█"
-        self._snake_size = 10
+        self._snake_horizontal_body = "X" # "▆"
+        self._snake_vertical_body = "X" # "█"
+        self._snake_size = 15
         self._delay = delay
         self._semaphore = Semaphore(1)
         self._lock_visiting = Lock()
@@ -72,7 +72,8 @@ class MapTraveller:
             move_index += 1
 
         if exit_found:
-            print(f"Traveller thread:[{self.id}] with origin:[{self._origin}] exit:[{self._exit}] finished with status:[{exit_found}]")
+            print(
+                f"Traveller thread:[{self.id}] with origin:[{self._origin}] exit:[{self._exit}] finished with status:[{exit_found}]")
 
         feedback = {
             "type": "traveller_feedback",
@@ -117,21 +118,28 @@ class MapTraveller:
             self._call_back_progress(feedback)
             return False
 
-        movements_to_try = [
-            destination.get_north_west_coordinate(),
-            destination.get_west_coordinate(),
-            destination.get_south_west_coordinate(),
-            destination.get_south_coordinate(),
-            destination.get_south_east_coordinate(),
-            destination.get_east_coordinate(),
-            destination.get_north_east_coordinate(),
-            destination.get_north_coordinate()
-        ]
+        movements_to_try = {
+            destination.get_north_west_coordinate(): False,
+            destination.get_west_coordinate(): False,
+            destination.get_south_west_coordinate(): False,
+            destination.get_south_coordinate(): False,
+            destination.get_south_east_coordinate(): False,
+            destination.get_east_coordinate(): False,
+            destination.get_north_east_coordinate(): False,
+            destination.get_north_coordinate(): False,
+        }
 
         found = False
         move_index = 0
         while not found and move_index < len(movements_to_try):
-            next_movement_coordinate = movements_to_try[move_index]
+            # next_movement_coordinate = movements_to_try[move_index]
+            tried = True
+            while tried:
+                next_try = choice(list(movements_to_try.keys()))
+                tried = movements_to_try[next_try]
+
+            movements_to_try[next_try] = True
+            next_movement_coordinate = next_try
 
             message = f"Traveller: {self.id} trying to go from ({str(destination)}) from ({str(next_movement_coordinate)})"
             feedback.update({"description": message})

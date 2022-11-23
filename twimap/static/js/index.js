@@ -5,9 +5,9 @@ const connectWS = () => {
     connection = new WebSocket('ws://localhost:8888/ws');
 
     connection.addEventListener('open', (e) => {
-        config = { "rows": 55,
-        "cols": 80, "apply_restrictions": true, "wall_type": 2,
-        "delay": 0.0001, "travellers_count": 50}
+        config = { "rows": 100,
+        "cols": 225, "apply_restrictions": true, "wall_type": 3,
+        "delay": 0.0002, "travellers_count": 10}
         connection.send(JSON.stringify(config))
     });
 
