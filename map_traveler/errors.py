@@ -1,3 +1,3 @@
-class TravellerFindingExitError(Exception):
+class TravelerFindingExitError(Exception):
     def __init__(self):
         self.message = "Traveller is already searching for an exit"

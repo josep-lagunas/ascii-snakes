@@ -1,16 +1,27 @@
+import logging
 import os
+import sys
 
+from tornado.ioloop import IOLoop
 from tornado.web import (
     Application,
 )
-from tornado.ioloop import IOLoop
-from tornado.websocket import WebSocketHandler
 
 from twimap.main import MainHandler
-from twimap.realtime import EchoWebSocket
+from twimap.real_time_websocket import RealTimeWebSocket
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), "static")
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "template")
+
+logging.basicConfig(**{
+    "format": "%(asctime)s %(message)s",
+    "handlers": [
+        logging.FileHandler(filename="log.log"),
+        logging.StreamHandler(stream=sys.stdout)
+    ],
+    "encoding": "utf-8",
+    "level": logging.INFO
+})
 
 settings = {
     "static_path": STATIC_PATH,
@@ -18,11 +29,11 @@ settings = {
 }
 
 HANDLERS = [
-    ("/ws", EchoWebSocket),
-    ("/", MainHandler),
+    ("/ws", RealTimeWebSocket, {"database": {"test": 123456}}),
+    ("/", MainHandler, {"database": {"test": 123456}}),
 ]
 
 app = Application(HANDLERS, **settings)
 
-app.listen(8888)
+app.listen(9000)
 IOLoop.current().start()

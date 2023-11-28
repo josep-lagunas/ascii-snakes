@@ -1,23 +1,42 @@
 .container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: auto;
+    width: 50%;
+    position: relative;
+    filter: blur(4px);
 }
 
-#map {
+.world {
+    position: absolute;
     line-height:1em;
     white-space: pre !important;
     color: #02fa59;
     font-size: 10pt;
-    font-family: courier, monospace, monospace !important;
+    font-family: courier new!important;
     margin: auto;
     width: fit-content;
 }
 
+#c-world {
+    border: solid 1px #ffffff;
+    color: #02fa59;
+    margin: auto;
+    font-family: courier new!important;
+    visibility: visible;
+}
+
 #info {
-    display: list-item;
-    text-align: center;
+    position: fixed;
+    text-align: left;
     font-family: courier, monospace, monospace !important;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    width: fit-content;
+    background: black;
+    border: solid 2px #ff9;
+    border-radius: 5px;
+    padding: 10px;
 }
 
 .black {
