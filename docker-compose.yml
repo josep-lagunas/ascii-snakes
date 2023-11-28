@@ -7,9 +7,9 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8888:8888"
+      - "9000:9000"
 
 networks:
   default:
-    external:
-      name: default_network
+    name: default_network
+    external: true

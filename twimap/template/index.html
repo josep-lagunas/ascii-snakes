@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Main page</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/icons8-hard-to-find-ios-16-16.png">
     <link rel="stylesheet" href="https://adobe-fonts.github.io/source-code-pro/source-code-pro.css">
     <link rel="stylesheet" href="../static/css/index.css">
     <script type="application/javascript" src="../static/js/index.js"></script>
     <script type="application/javascript">
-        connectWS()
+        window.onload = (event) => {
+            connectWS()
+        }
     </script>
 </head>
 <body class="black">
-    <h1 id="info">Map</h1>
-    <div class="container">
-        <div id="map">
-        </div>
+    <div id="info">World</div>
+    <div id="world-container" class="container">
+        <canvas id="c-world" class="world" style="z-index: 2"></canvas>
+        <canvas id="c-travelers" class="world" style="z-index: 1"></canvas>
     </div>
 </body>
 </html>
